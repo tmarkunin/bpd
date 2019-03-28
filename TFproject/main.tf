@@ -11,6 +11,9 @@ terraform {
 // Google Cloud provider
 provider "google" {
   version = "~> 1.5"
+  credentials = "${file("/home/tmarkunin/modern-ellipse-230911-32461a8aa8cc.json")}"
+  project     = "modern-ellipse-230911"
+  region      = "us-west1"
 }
 
 variable "unique_resource_name" {
