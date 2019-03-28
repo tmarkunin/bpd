@@ -10,7 +10,7 @@ terraform {
 
 // Configure the Google Cloud provider
 provider "google" {
- credentials = "${file("/home/tmarkunin/modern-ellipse-230911-32461a8aa8cc.json")}"
+ credentials = "${file("modern-ellipse-230911-32461a8aa8cc.json")}"
  project     = "modern-ellipse-230911"
  region      = "us-west1"
 }
