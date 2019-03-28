@@ -8,48 +8,46 @@ terraform {
   required_version = "> 0.8.0"
 }
 
-provider "aws" {
-  access_key = "${var.aws_access_id}"
-  secret_key = "${var.aws_secret_key}"
-  region     = "${var.region}"
-  version = "~> 1.8"
+// Google Cloud provider
+provider "google" {
+  version = "~> 1.5"
 }
 
+variable "unique_resource_name" {
+  description = "A unique name for the resource, required by GCE."
+}
 
-resource "aws_vpc" "default" {
-  cidr_block           = "10.0.1.0/16"
-  enable_dns_hostnames = true
+variable "machine_type" {
+  description = "The machine type to create."
+  default = "n1-standard-1"
+}
 
-  tags {
-    Name = "${var.network_name_prefix}"
+variable "boot_disk" {
+  description = "The boot disk for the instance."
+  default = "centos-cloud/centos-7"
+}
+
+variable "zone" {
+  description = "The zone the resource should be created in."
+  default = "us-central1-a"
+}
+
+// Create a new compute engine resource
+resource "google_compute_instance" "default" {
+  name         = "${var.unique_resource_name}"
+  machine_type = "${var.machine_type}"
+  zone         = "${var.zone}"
+  boot_disk {
+    initialize_params {
+      image = "${var.boot_disk}"
+    }
+  }
+  network_interface {
+    network = "default"
+
+    access_config {
+      // Ephemeral IP
+    }
   }
 }
 
-resource "aws_subnet" "subnet" {
-  vpc_id = "${aws_vpc.default.id}"
-  cidr_block = "10.0.1.0/24"
-  availability_zone = "${var.availability_zone}"
-  tags {
-    Name = "Main"
-  }
-}
-
-resource "aws_instance" "aws_instance" {
-  ami = "${var.aws_instance_ami}"
-  key_name = "${aws_key_pair.auth.id}"
-  instance_type = "${var.aws_instance_aws_instance_type}"
-  availability_zone = "${var.availability_zone}"
-  subnet_id  = "${aws_subnet.subnet.id}"
-  tags {
-    Name = "${var.aws_instance_name}"
-  }
-}
-
-resource "tls_private_key" "ssh" {
-    algorithm = "RSA"
-}
-
-resource "aws_key_pair" "auth" {
-    key_name = "${var.aws_key_pair_name}"
-    public_key = "${tls_private_key.ssh.public_key_openssh}"
-}
